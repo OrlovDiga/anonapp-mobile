@@ -7,9 +7,12 @@ import 'package:anonapp_mobile/animation/fade_animation.dart';
 import 'package:anonapp_mobile/screen/start_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
-import 'package:cookie_jar/cookie_jar.dart';
+import 'package:path_provider/path_provider.dart';
 
 class LoginPage extends StatelessWidget {
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,6 +82,7 @@ class LoginPage extends StatelessWidget {
                                 hintStyle: TextStyle(color: Colors.grey.withOpacity(.8)),
                                 hintText: "Email or Phone number"
                             ),
+                            controller: usernameController,
                           ),
                         ),
                         Container(
@@ -90,6 +94,7 @@ class LoginPage extends StatelessWidget {
                                 hintStyle: TextStyle(color: Colors.grey.withOpacity(.8)),
                                 hintText: "Password"
                             ),
+                            controller: passwordController,
                           ),
                         ),
                       ],
@@ -123,78 +128,22 @@ class LoginPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         onPressed: () async {
-                          var url = "http://127.0.0.1:8080/authenticate";//"http://localhost:8080/anonapp/api/authenticate";
+                          var res = await authentication();
 
-                          Map jsonData = {
-                            'username': 'user',
-                            'password': '1234'
-                          };
-
-//                          var cj = new CookieJar();
-//
-//                          HttpClientRequest request = await HttpClient().post(
-//                            url,
-//                            headers:
-//                          )
-//                          ..headers.contentType = ContentType.json
-//                          ..write(jsonData);
-                          print(jsonEncode(jsonData));
-                          http.post(url,
-                              headers: {"Content-Type": "application/json"},
-                              body: jsonEncode(jsonData),
-                          ).then((http.Response response) {
-//                            print("Response status: ${response.statusCode}");
-//                            print("Response body: ${response.contentLength}");
-//                            print(response.headers);
-//                            print(response.request);
-//                            print(response.headers['set-cookie']);
-                            var cookies = response.headers['set-cookie'];
-                            var cookiesList = cookies.split(';');
-                            print(cookiesList);
-                            cookiesList.forEach((e) => {
-                              if (e.contains("token=")) {
-                                print(e),
-                                File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').
-                                writeAsStringSync(e)
-                              }
-                            });
-                          });
-
-//                          HttpClientResponse response = await request.close();
-//                          final cont
-//
-//                          ents = StringBuffer();
-//                          final completer = Completer<String>();
-//                          response.transform(utf8.decoder).listen((data) {
-//                            contents.write(data);
-//                          }, onDone: () => completer.complete(contents.toString()));
-//                          print(completer);
-//                          print(contents);
-//                          print(response.statusCode);
-//                          print(response.cookies);
-//                          print(response.headers);
-                          //cj.saveFromResponse(Uri.parse(url), response.cookies);
-
-                          //List<Cookie> c = cj.loadForRequest(Uri.parse(url));
-                          //print(c);
-
-
-
-
-                          /*var cj = new CookieJar();
-                          List<Cookie> results = cj.loadForRequest(Uri.parse("http://localhost:8080/anonapp/api/authenticate"));
-                          
-                          var response = await http.post(
-                              url,
-                              body: {'login': 'lol', 'password': '1024'});
-                          print('Response status: ${response.statusCode}');
-                          print('Response body: ${response.body}');
-                          */
-
-                          //print(results);
+                          if (res) {
+                            print(res);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => StartPage()));
+                          } else {
+                            print('sosi');
+                            usernameController.clear();
+                            passwordController.clear();
+                          }
+/*
                           Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => StartPage()));
+                              MaterialPageRoute(builder: (context) => StartPage()));*/
                         },
                         color: Color.fromRGBO(131, 58, 199, 15),
                         textColor: Colors.white,
@@ -233,44 +182,39 @@ class LoginPage extends StatelessWidget {
     throw UnimplementedError();
   }
 
-  Future<void> authentication() async {
-    var url = "http://localhost:8080/anonapp/api/authenticate";
+  Future<bool> authentication() async {
+    var url = "http://127.0.0.1:8080/authenticate";
 
-    var response = await http.post(
-        url,
-        body: {'login': 'doodle', 'password': 'blue'});
+    final diretory = await getApplicationDocumentsDirectory();
+    String path = '${diretory.path}/token';
 
-    //String token = ;
-    final file =  File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token');
-    file.writeAsStringSync(response.headers['set-cookie']);
-    String rawCookie = response.headers['set-cookie'];
-    updateCookie(response);
+    Map jsonData = {
+      'username': usernameController.text,
+      'password': passwordController.text
+    };
 
+    var response = await http.post(url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(jsonData),
+    );
 
-    print('cookie =  ${response.headers['set-cookie']}');
-    print('object');
-    print('Response status: ${response.statusCode} ${response.headers['set-cookie']}');
-    print('Response status: ${response.statusCode} ${response.headers['set-cookie']}');
-    print('Response body: ${response.body}');
-  }
+    print(response.statusCode);
 
-  /*Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/counter.txt');
-  }*/
+    if (response.statusCode == 200) {
+      var cookiesList = response.headers['set-cookie'].split(';');
+      print(cookiesList);
+      cookiesList.forEach((e) => {
+        if (e.contains("token=")) {
+          print(e),
+          File(path).
+          writeAsStringSync(e)
 
-  void updateCookie(http.Response response) {
-    Map<String, String> headers = {};
-
-    String rawCookie = response.headers['set-cookie'];
-    if (rawCookie != null) {
-      print('1');
-      int index = rawCookie.indexOf(';');
-      headers['cookie'] =
-      (index == -1) ? rawCookie : rawCookie.substring(0, index);
-    } else{
-      print('2');
+        }
+      });
+      print('true');
+      return true;
     }
-
+    print('false');
+    return false;
   }
 }

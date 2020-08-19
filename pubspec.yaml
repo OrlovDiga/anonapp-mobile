@@ -33,6 +33,7 @@ dependencies:
   http: ^0.12.2
   cookie_jar: ^1.0.0
   dio: ^3.0.10
+  path_provider: ^1.6.11
 
 
 dev_dependencies:
