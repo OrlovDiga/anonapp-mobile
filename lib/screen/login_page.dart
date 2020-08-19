@@ -184,6 +184,7 @@ class LoginPage extends StatelessWidget {
 
   Future<bool> authentication() async {
     var url = "http://127.0.0.1:8080/authenticate";
+    print(File('//assets/config/token').path);
 
     final diretory = await getApplicationDocumentsDirectory();
     String path = '${diretory.path}/token';
@@ -206,9 +207,8 @@ class LoginPage extends StatelessWidget {
       cookiesList.forEach((e) => {
         if (e.contains("token=")) {
           print(e),
-          File(path).
-          writeAsStringSync(e)
-
+          File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').
+          writeAsStringSync(e.split('=')[1])
         }
       });
       print('true');

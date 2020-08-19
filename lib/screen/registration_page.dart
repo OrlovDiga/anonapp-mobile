@@ -177,12 +177,9 @@ class RegistrationPage extends StatelessWidget {
                 )
               ],
             ),
-
           ),
-
         ],
       ),
-
     ) ;
     throw UnimplementedError();
   }
