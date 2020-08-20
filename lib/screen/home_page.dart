@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:anonapp_mobile/animation/fade_animation.dart';
 import 'package:web_socket_channel/io.dart';
 
-class StartPage extends StatelessWidget {
+class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

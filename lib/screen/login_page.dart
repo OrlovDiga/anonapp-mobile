@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:anonapp_mobile/screen/registration_page.dart';
 import 'package:flutter/material.dart';
 import 'package:anonapp_mobile/animation/fade_animation.dart';
-import 'package:anonapp_mobile/screen/start_page.dart';
+import 'package:anonapp_mobile/screen/home_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -128,13 +128,13 @@ class LoginPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         onPressed: () async {
-                          var res = await authentication();
+                          //var res = await authentication();
 
-                          if (res) {
-                            print(res);
+                          if (/*res*/true) {
+                            //print(res);
                             Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => StartPage()));
+                                MaterialPageRoute(builder: (context) => HomePage()));
                           } else {
                             print('sosi');
                             usernameController.clear();
