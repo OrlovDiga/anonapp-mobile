@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dash_chat/dash_chat.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:swipedetector/swipedetector.dart';
 
 
 class ChatPage extends StatefulWidget {
@@ -21,6 +22,7 @@ class _ChatPageState extends State<ChatPage> {
   final GlobalKey<DashChatState> _chatViewKey = GlobalKey<DashChatState>();
   //ScrollController _controller;
   Color _heartColor;
+  Color _photoColor = Colors.grey;
 
   final ChatUser user = ChatUser(
     name: "Fayeed",
@@ -46,7 +48,6 @@ class _ChatPageState extends State<ChatPage> {
    // _controller = ScrollController();
     super.initState();
   }
-
 
   void systemMessage() {
     Timer(Duration(milliseconds: 300), () {
@@ -79,7 +80,212 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SwipeDetector(
+        child: Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            automaticallyImplyLeading: false,
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment:  CrossAxisAlignment.center,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 35.0,
+                  ),
+                  onPressed: onPressedToBack,
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.favorite,
+                    color: _heartColor,
+                    size: 35,
+                  ),
+                  onPressed: onPressedToHeart,
+                  padding: EdgeInsets.symmetric(vertical: 0, horizontal: 110),
+                ),
+                IconButton(
+                  icon: Icon(
+                      Icons.arrow_forward,
+                      color: Colors.white,
+                      size: 35
+                  ),
+                  onPressed: onPressedToNext,
+                ),
+              ],
+            ),
+            backgroundColor: Color.fromRGBO(131, 58, 199, 15),
+          ),
+          resizeToAvoidBottomInset: false,
+          backgroundColor: Color(0xff21254A),
+          body: StreamBuilder(
+              stream: widget.channel.stream,
+              builder: (context, snapshots) {
+                print('${snapshots.toString()}');
+                print('${snapshots.data.toString()}');
+                if (/*!snapshots.hasData*/false) {
+                  print('Haven\'t data.');
+                  return Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  );
+                } else {
+                  var items = List();
+                  String s = snapshots.data.toString();
+                  ChatMessage msg = new ChatMessage(text: s, user: otherUser);
+                  messageList.add(msg);
+                  //items.add(s);
+                  //var messages =
+                  //items.map((i) => new ChatMessage(text: i, user: otherUser)).toList();
+                  return DashChat(
+                    user: user,
+                    messages: messageList,
+                    sendOnEnter: true,
+                    inputDecoration: InputDecoration(
+                      hintText: "Message here...",
+                      border: InputBorder.none,
+                    ),
+                    onSend: onSend,
+                    //scrollController: _controller,
+                    leading: <Widget>[
+                      IconButton(
+                        icon: Icon(
+                          Icons.photo,
+                          color: _photoColor,
+                        ),
+                        onPressed: uploadFile,
+                      ),
+                    ],
+                    showTraillingBeforeSend: false,
+                  );
+                }
+              }
+          ),
+        ),
+      onSwipeLeft: () {
+        Navigator.pushNamedAndRemoveUntil(context, '/chat', (route) => false);
+      },
+      swipeConfiguration: SwipeConfiguration(
+          verticalSwipeMinVelocity: 100.0,
+          verticalSwipeMinDisplacement: 50.0,
+          verticalSwipeMaxWidthThreshold:100.0,
+          horizontalSwipeMaxHeightThreshold: 50.0,
+          horizontalSwipeMinDisplacement:50.0,
+          horizontalSwipeMinVelocity: 200.0
+      ),
+    );
+
+   /* return GestureDetector(
+      *//*onTap: () {
+        setState(() {
+          //Perform actions
+        });
+      },*//*
+      onPanUpdate: (details) {
+        if (details.delta.dx < 0) {
+          // swiping in right direction
+          print('object');
+        }
+      },
+      child: Scaffold(
+      appBar: AppBar(
+      centerTitle: true,
+      automaticallyImplyLeading: false,
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment:  CrossAxisAlignment.center,
+        children: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+              size: 35.0,
+            ),
+            onPressed: onPressedToBack,
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.favorite,
+              color: _heartColor,
+              size: 35,
+            ),
+            onPressed: onPressedToHeart,
+            padding: EdgeInsets.symmetric(vertical: 0, horizontal: 110),
+          ),
+          IconButton(
+            icon: Icon(
+                Icons.arrow_forward,
+                color: Colors.white,
+                size: 35
+            ),
+            onPressed: onPressedToNext,
+          ),
+        ],
+      ),
+      backgroundColor: Color.fromRGBO(131, 58, 199, 15),
+    ),
+    resizeToAvoidBottomInset: false,
+    backgroundColor: Color(0xff21254A),
+    body: StreamBuilder(
+        stream: widget.channel.stream,
+        builder: (context, snapshots) {
+          print('${snapshots.toString()}');
+          print('${snapshots.data.toString()}');
+          if (*//*!snapshots.hasData*//*false) {
+            print('Haven\'t data.');
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).primaryColor,
+                ),
+              ),
+            );
+          } else {
+            var items = List();
+            String s = snapshots.data.toString();
+            ChatMessage msg = new ChatMessage(text: s, user: otherUser);
+            messageList.add(msg);
+            //items.add(s);
+            //var messages =
+            //items.map((i) => new ChatMessage(text: i, user: otherUser)).toList();
+            return DashChat(
+              user: user,
+              messages: messageList,
+              sendOnEnter: true,
+              inputDecoration: InputDecoration(
+                hintText: "Message here...",
+                border: InputBorder.none,
+              ),
+              onSend: onSend,
+             //scrollController: _controller,
+              leading: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    Icons.photo,
+                    color: _photoColor,
+                  ),
+                  onPressed: uploadFile,
+                ),
+              ],
+              showTraillingBeforeSend: false,
+            );
+          }
+        }
+      ),
+    ),
+    );
+*/
+  }
+
+  void onPressedToHeart() {
+    /*Scaffold(
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -120,56 +326,59 @@ class _ChatPageState extends State<ChatPage> {
       resizeToAvoidBottomInset: false,
       backgroundColor: Color(0xff21254A),
       body: StreamBuilder(
-        stream: widget.channel.stream,
-        builder: (context, snapshots) {
-          print('${snapshots.toString()}');
-          print('${snapshots.data.toString()}');
-          if (/*!snapshots.hasData*/false) {
-            print('Haven\'t data.');
-            return Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).primaryColor,
+          stream: widget.channel.stream,
+          builder: (context, snapshots) {
+            print('${snapshots.toString()}');
+            print('${snapshots.data.toString()}');
+            if (*//*!snapshots.hasData*//*false) {
+              print('Haven\'t data.');
+              return Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor,
+                  ),
                 ),
-              ),
-            );
-          } else {
-            var items = List();
-            String s = snapshots.data.toString();
-            ChatMessage msg = new ChatMessage(text: s, user: otherUser);
-            messageList.add(msg);
-            //items.add(s);
-           /* var messages =
-            items.map((i) => new ChatMessage(text: i, user: otherUser)).toList();*/
-            return DashChat(
-              user: user,
-              messages: messageList,
-              sendOnEnter: true,
-              inputDecoration: InputDecoration(
-                hintText: "Message here...",
-                border: InputBorder.none,
-              ),
-              onSend: onSend,
-             //scrollController: _controller,
-              trailing: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.photo),
-                  onPressed: uploadFile,
-                )
-              ],
-            );
+              );
+            } else {
+              var items = List();
+              String s = snapshots.data.toString();
+              ChatMessage msg = new ChatMessage(text: s, user: otherUser);
+              messageList.add(msg);
+              //items.add(s);
+              //var messages =
+              //items.map((i) => new ChatMessage(text: i, user: otherUser)).toList();
+              return DashChat(
+                user: user,
+                messages: messageList,
+                sendOnEnter: true,
+                inputDecoration: InputDecoration(
+                  hintText: "Message here...",
+                  border: InputBorder.none,
+                ),
+                onSend: onSend,
+                //scrollController: _controller,
+                leading: <Widget>[
+                  IconButton(
+                    icon: Icon(
+                      Icons.photo,
+                      color: _photoColor,
+                    ),
+                    onPressed: uploadFile,
+                  ),
+                ],
+                showTraillingBeforeSend: false,
+              );
+            }
           }
-        }
       ),
-    );
-  }
-
-  void onPressedToHeart() {
+    ),*/
     setState(() {
       if (_heartColor == Colors.red) {
         _heartColor = Colors.white;
+        _photoColor = Colors.grey;
       } else {
         _heartColor = Colors.red;
+        _photoColor = Colors.black;
       }
     });
   }
@@ -180,6 +389,8 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void onPressedToNext() {
-
+    Navigator.pushNamedAndRemoveUntil(context, "/chat", (r) => false);
   }
 }
+
+
