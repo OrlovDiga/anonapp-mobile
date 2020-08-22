@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:anonapp_mobile/model/message_model.dart';
 import 'package:dash_chat/dash_chat.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
@@ -38,10 +40,29 @@ class _ChatPageState extends State<ChatPage> {
     uid: "25649654",
   );
 
-  List<ChatMessage> messageList = List<ChatMessage>();
+  List<ChatMessage> messages = List<ChatMessage>();
   var m = List<ChatMessage>();
 
   var i = 0;
+
+  void systemMessage() {
+    Timer(Duration(milliseconds: 300), () {
+      if (i < 6) {
+        setState(() {
+          messages = [...messages, m[i]];
+        });
+        i++;
+      }
+      Timer(Duration(milliseconds: 300), () {
+        _chatViewKey.currentState.scrollController
+          ..animateTo(
+            _chatViewKey.currentState.scrollController.position.maxScrollExtent,
+            curve: Curves.easeOut,
+            duration: const Duration(milliseconds: 300),
+          );
+      });
+    });
+  }
 
   @override
   void initState() {
@@ -49,9 +70,13 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void onSend(ChatMessage message) {
+    SocketChatUser user = new SocketChatUser('uid', "Walf", "urlToAvatar");
+    SocketChatMessage chatMessage = new SocketChatMessage(message.id, message.text, user, message.image, message.video);
+    SocketMessage msg = new SocketMessage(MessageType.MSG, chatMessage);
     print(message.toJson());
-    //messageList.add(message);
-    widget.channel.sink.add(message.toJson().toString());
+    messages.add(message);
+    widget.channel.sink.add(jsonEncode(msg.toJson()));
+    print(jsonEncode(msg.toJson()));
   }
 
   void uploadFile() async {
@@ -106,7 +131,7 @@ class _ChatPageState extends State<ChatPage> {
               builder: (context, snapshots) {
                 print('${snapshots.toString()}');
                 print('${snapshots.data.toString()}');
-                if (/*!snapshots.hasData*/false) {
+                if (!snapshots.hasData) {
                   print('Haven\'t data.');
                   return Center(
                     child: CircularProgressIndicator(
@@ -116,32 +141,76 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   );
                 } else {
-                  var items = List();
-                  String s = snapshots.data.toString();
-                  ChatMessage msg = new ChatMessage(text: s, user: otherUser);
-                  messageList.add(msg);
+                  SocketMessage socketMessage = SocketMessage.fromJson(jsonDecode(snapshots.data));
+
+                  if (socketMessage.type == MessageType.LIKE) {
+                    _canUploadFile = true;
+                    _photoColor = Colors.black;
+                  } else if (socketMessage.type == MessageType.MSG) {
+                    SocketChatMessage msg = socketMessage.chatMessage;
+                    ChatUser user = new ChatUser();
+                    user.uid = msg.user.uid;
+                    user.name = msg.user.name;
+                    user.avatar = msg.user.avatar;
+                    ChatMessage message = new ChatMessage(text: msg.text, user: user, image: msg.image, video: msg.video, id: msg.id);
+                    messages.add(message);
+                  } else if (socketMessage.type == MessageType.NEXT) {
+                    widget.channel.sink.close();
+                    Navigator.pushNamedAndRemoveUntil(context, '/chat', (route) => false);
+                  } else if (socketMessage.type == MessageType.CONNECT) {
+                    print('Start chat!');
+                  }
+
+                  //var items = List();
+                  //String s = snapshots.data.toString();
+                  //ChatMessage msg = new ChatMessage(text: "Hello,World!", user: otherUser);
+                  //messages.add(msg);
                   //items.add(s);
                   //var messages =
                   //items.map((i) => new ChatMessage(text: i, user: otherUser)).toList();
                   return DashChat(
-                    user: user,
-                    messages: messageList,
-                    sendOnEnter: true,
-                    inputDecoration: InputDecoration(
-                      hintText: "Message here...",
-                      border: InputBorder.none,
-                    ),
+                    key: _chatViewKey,
+                    inverted: false,
                     onSend: onSend,
+                    sendOnEnter: true,
+                    textInputAction: TextInputAction.send,
+                    user: user,
+                    inputDecoration:
+                    InputDecoration.collapsed(hintText: "Add message here..."),
+                    dateFormat: DateFormat('yyyy-MMM-dd'),
+                    timeFormat: DateFormat('HH:mm'),
+                    messages: messages,
+                    showUserAvatar: false,
+                    showAvatarForEveryMessage: false,
+                    scrollToBottom: true,
+                    onPressAvatar: (ChatUser user) {
+                      print("OnPressAvatar: ${user.name}");
+                    },
+                    onLongPressAvatar: (ChatUser user) {
+                      print("OnLongPressAvatar: ${user.name}");
+                    },
+                    inputMaxLines: 5,
+                    messageContainerPadding: EdgeInsets.only(left: 5.0, right: 5.0),
+                    alwaysShowSend: true,
+                    inputTextStyle: TextStyle(fontSize: 16.0),
+                    inputContainerStyle: BoxDecoration(
+                      border: Border.all(width: 0.0),
+                      color: Colors.white,
+                    ),
+                    onLoadEarlier: () {
+                      print("laoding...");
+                    },
                     leading: <Widget>[
                       IconButton(
                         icon: Icon(
                           Icons.photo,
                           color: _photoColor,
                         ),
-                        onPressed: _canUploadFile ? uploadFile : null,
+                        onPressed: uploadFile,
                       ),
                     ],
-                    showTraillingBeforeSend: false,
+                    shouldShowLoadEarlier: false,
+                    showTraillingBeforeSend: true,
                   );
                 }
               }
@@ -164,9 +233,7 @@ class _ChatPageState extends State<ChatPage> {
   void onPressedToHeart() {
     setState(() {
       _isHeartButtonDisabled = true;
-      _canUploadFile = true;
       _heartColor = Colors.red;
-      _photoColor = Colors.black;
     });
   }
 
@@ -176,6 +243,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void onPressedToNext() {
+    SocketMessage msg = new SocketMessage(MessageType.NEXT, null);
+    print(json.encode(msg));
+    widget.channel.sink.add(json.encode(msg));
     Navigator.pushNamedAndRemoveUntil(context, "/chat", (r) => false);
   }
 }

@@ -128,9 +128,9 @@ class LoginPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         onPressed: () async {
-                          //var res = await authentication();
+                          var res = await authentication();
 
-                          if (true) {
+                          if (res) {
                             //print(res);
                             Navigator.push(
                                 context,

@@ -6,3 +6,4 @@ class User {
 
   User(this.id, this.name, this.password, this.matchingPassword);
 }
+
