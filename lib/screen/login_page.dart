@@ -130,7 +130,7 @@ class LoginPage extends StatelessWidget {
                         onPressed: () async {
                           //var res = await authentication();
 
-                          if (/*res*/true) {
+                          if (true) {
                             //print(res);
                             Navigator.push(
                                 context,
@@ -140,10 +140,7 @@ class LoginPage extends StatelessWidget {
                             usernameController.clear();
                             passwordController.clear();
                           }
-/*
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => StartPage()));*/
+
                         },
                         color: Color.fromRGBO(131, 58, 199, 15),
                         textColor: Colors.white,
