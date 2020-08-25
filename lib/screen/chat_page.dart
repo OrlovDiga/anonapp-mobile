@@ -8,20 +8,41 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:swipedetector/swipedetector.dart';
 
-
-class ChatPage extends StatefulWidget {
+/*class Chat extends StatelessWidget {
   final IOWebSocketChannel channel = IOWebSocketChannel.connect(
       Uri(scheme: "ws", host: "localhost", port: 8080, path: "/api/socket"),
       headers: {'token': File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').readAsStringSync()}
   );
 
+  var myStreamController = StreamController<bool>.broadcast();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: StreamBuilder(
+    );
+  }
+}*/
+
+class ChatPage extends StatefulWidget {
+  final IOWebSocketChannel channel
+
+   = IOWebSocketChannel.connect(
+      Uri(scheme: "ws", host: "localhost", port: 8080, path: "/api/socket"),
+      headers: {'token': File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').readAsStringSync()}
+  );
+  //ChatPage(this.channel);
+
+
+
   @override
   _ChatPageState createState() => _ChatPageState();
-
 }
 
 class _ChatPageState extends State<ChatPage> {
+
   final GlobalKey<DashChatState> _chatViewKey = GlobalKey<DashChatState>();
+  bool _showChat = true;
   Color _heartColor;
   Color _photoColor = Colors.grey;
   bool _isHeartButtonDisabled = false;
@@ -84,6 +105,11 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   @override
+  void didUpdateWidget(ChatPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SwipeDetector(
         child: Scaffold(
@@ -131,7 +157,8 @@ class _ChatPageState extends State<ChatPage> {
               builder: (context, snapshots) {
                 print('${snapshots.toString()}');
                 print('${snapshots.data.toString()}');
-                if (!snapshots.hasData) {
+
+                if (!snapshots.hasData/*false*/) {
                   print('Haven\'t data.');
                   return Center(
                     child: CircularProgressIndicator(
@@ -142,8 +169,20 @@ class _ChatPageState extends State<ChatPage> {
                   );
                 } else {
                   SocketMessage socketMessage = SocketMessage.fromJson(jsonDecode(snapshots.data));
-
-                  if (socketMessage.type == MessageType.LIKE) {
+                  //SocketMessage socketMessage = SocketMessage(MessageType.CONNECT, null);
+                  print('in stream _showChat =  ${_showChat}');
+                  if (socketMessage.type == MessageType.CONNECT) {
+                    _showChat = true;
+                    print('Start chat!');
+                  } else if (!_showChat) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    );
+                  } else if (socketMessage.type == MessageType.LIKE) {
                     _canUploadFile = true;
                     _photoColor = Colors.black;
                   } else if (socketMessage.type == MessageType.MSG) {
@@ -154,11 +193,17 @@ class _ChatPageState extends State<ChatPage> {
                     user.avatar = msg.user.avatar;
                     ChatMessage message = new ChatMessage(text: msg.text, user: user, image: msg.image, video: msg.video, id: msg.id);
                     messages.add(message);
-                  } else if (socketMessage.type == MessageType.NEXT) {
-                    widget.channel.sink.close();
-                    Navigator.pushNamedAndRemoveUntil(context, '/chat', (route) => false);
-                  } else if (socketMessage.type == MessageType.CONNECT) {
-                    print('Start chat!');
+                  }  else if (socketMessage.type == MessageType.NEXT) {
+                    //print('Start chat!');
+                    _showChat = false;
+                    refreshPage();
+                    return Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    );
                   }
 
                   //var items = List();
@@ -206,7 +251,7 @@ class _ChatPageState extends State<ChatPage> {
                           Icons.photo,
                           color: _photoColor,
                         ),
-                        onPressed: uploadFile,
+                        onPressed: _canUploadFile ? null : uploadFile,
                       ),
                     ],
                     shouldShowLoadEarlier: false,
@@ -217,7 +262,7 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
       onSwipeLeft: () {
-        Navigator.pushNamedAndRemoveUntil(context, '/chat', (route) => false);
+          onPressedToNext();
       },
       swipeConfiguration: SwipeConfiguration(
           verticalSwipeMinVelocity: 100.0,
@@ -246,7 +291,21 @@ class _ChatPageState extends State<ChatPage> {
     SocketMessage msg = new SocketMessage(MessageType.NEXT, null);
     print(json.encode(msg));
     widget.channel.sink.add(json.encode(msg));
-    Navigator.pushNamedAndRemoveUntil(context, "/chat", (r) => false);
+    print('Before in onPressedToNext _showChat =  ${_showChat}');
+    _showChat = false;
+    print('After in onPressedToNext _showChat =  ${_showChat}');
+    refreshPage();
+  }
+
+  void refreshPage() {
+    messages.clear();
+    _heartColor = Colors.white;
+    _photoColor = Colors.grey;
+    _isHeartButtonDisabled = false;
+    _canUploadFile = false;
+    setState(() {
+
+    });
   }
 }
 

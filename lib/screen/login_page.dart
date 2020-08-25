@@ -130,7 +130,7 @@ class LoginPage extends StatelessWidget {
                         onPressed: () async {
                           var res = await authentication();
 
-                          if (res) {
+                          if (res/*true*/) {
                             //print(res);
                             Navigator.push(
                                 context,
