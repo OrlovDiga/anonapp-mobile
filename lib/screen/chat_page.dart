@@ -7,6 +7,9 @@ import 'package:dash_chat/dash_chat.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:swipedetector/swipedetector.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:http/http.dart' as http;
 
 /*class Chat extends StatelessWidget {
   final IOWebSocketChannel channel = IOWebSocketChannel.connect(
@@ -25,11 +28,9 @@ import 'package:swipedetector/swipedetector.dart';
 }*/
 
 class ChatPage extends StatefulWidget {
-  final IOWebSocketChannel channel
-
-   = IOWebSocketChannel.connect(
+  final IOWebSocketChannel channel = IOWebSocketChannel.connect(
       Uri(scheme: "ws", host: "localhost", port: 8080, path: "/api/socket"),
-      headers: {'token': File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').readAsStringSync()}
+      headers: {'token': 'dadad'/*File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').readAsStringSync()*/}
   );
   //ChatPage(this.channel);
 
@@ -47,6 +48,7 @@ class _ChatPageState extends State<ChatPage> {
   Color _photoColor = Colors.grey;
   bool _isHeartButtonDisabled = false;
   bool _canUploadFile = false;
+  final picker = new ImagePicker();
 
   final ChatUser user = ChatUser(
     name: "Fayeed",
@@ -101,7 +103,26 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void uploadFile() async {
+    PickedFile pickedFile = await picker.getImage(source: ImageSource.gallery);
+    final bytes = await pickedFile.readAsBytes();
 
+    String data = base64.encode(bytes);
+    String fileExtension = path.extension(pickedFile.path);
+
+    var url = "http://127.0.0.1:8080/resources";
+    Map jsonData = {
+      'extension': fileExtension,
+      'data': data
+    };
+
+    var response = await http.post(url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(jsonData),
+    );
+
+    ChatMessage message =
+    ChatMessage(text: "", user: user, image: response.body.toString());
+    messages.add(message);
   }
 
   @override
@@ -158,7 +179,7 @@ class _ChatPageState extends State<ChatPage> {
                 print('${snapshots.toString()}');
                 print('${snapshots.data.toString()}');
 
-                if (!snapshots.hasData/*false*/) {
+                if (/*!snapshots.hasData*/false) {
                   print('Haven\'t data.');
                   return Center(
                     child: CircularProgressIndicator(
@@ -168,10 +189,10 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   );
                 } else {
-                  SocketMessage socketMessage = SocketMessage.fromJson(jsonDecode(snapshots.data));
+                  //SocketMessage socketMessage = SocketMessage.fromJson(jsonDecode(snapshots.data));
                   //SocketMessage socketMessage = SocketMessage(MessageType.CONNECT, null);
                   print('in stream _showChat =  ${_showChat}');
-                  if (socketMessage.type == MessageType.CONNECT) {
+                  /*if (socketMessage.type == MessageType.CONNECT) {
                     _showChat = true;
                     print('Start chat!');
                   } else if (!_showChat) {
@@ -204,12 +225,12 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                       ),
                     );
-                  }
+                  }*/
 
                   //var items = List();
                   //String s = snapshots.data.toString();
-                  //ChatMessage msg = new ChatMessage(text: "Hello,World!", user: otherUser);
-                  //messages.add(msg);
+                  ChatMessage msg = new ChatMessage(text: "Hello,World!", user: otherUser);
+                  messages.add(msg);
                   //items.add(s);
                   //var messages =
                   //items.map((i) => new ChatMessage(text: i, user: otherUser)).toList();
@@ -251,7 +272,7 @@ class _ChatPageState extends State<ChatPage> {
                           Icons.photo,
                           color: _photoColor,
                         ),
-                        onPressed: _canUploadFile ? null : uploadFile,
+                        onPressed: uploadFile,
                       ),
                     ],
                     shouldShowLoadEarlier: false,
