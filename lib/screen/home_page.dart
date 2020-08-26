@@ -1,9 +1,9 @@
+import 'dart:io';
+
+import 'package:anonapp_mobile/animation/fade_animation.dart';
 import 'package:anonapp_mobile/screen/chat_page.dart';
-import 'package:anonapp_mobile/screen/login_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:anonapp_mobile/animation/fade_animation.dart';
-import 'package:web_socket_channel/io.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -100,7 +100,10 @@ class HomePage extends StatelessWidget {
                 ),
                 RawMaterialButton(
                   onPressed: () {
-                    Navigator.pushNamedAndRemoveUntil(context, "/", (r) => false);                  },
+                    File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').
+                    writeAsStringSync('');
+                    Navigator.pushNamedAndRemoveUntil(context, "/", (r) => false);
+                    },
                   elevation: 2.0,
                   fillColor: Color.fromRGBO(131, 58, 199, 4),
                   child: Icon(

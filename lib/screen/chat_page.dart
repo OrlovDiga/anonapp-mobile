@@ -11,30 +11,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 
-/*class Chat extends StatelessWidget {
+class ChatPage extends StatefulWidget {
   final IOWebSocketChannel channel = IOWebSocketChannel.connect(
       Uri(scheme: "ws", host: "localhost", port: 8080, path: "/api/socket"),
       headers: {'token': File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').readAsStringSync()}
   );
-
-  var myStreamController = StreamController<bool>.broadcast();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: StreamBuilder(
-    );
-  }
-}*/
-
-class ChatPage extends StatefulWidget {
-  final IOWebSocketChannel channel = IOWebSocketChannel.connect(
-      Uri(scheme: "ws", host: "localhost", port: 8080, path: "/api/socket"),
-      headers: {'token': 'dadad'/*File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').readAsStringSync()*/}
-  );
-  //ChatPage(this.channel);
-
-
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -324,9 +305,7 @@ class _ChatPageState extends State<ChatPage> {
     _photoColor = Colors.grey;
     _isHeartButtonDisabled = false;
     _canUploadFile = false;
-    setState(() {
-
-    });
+    setState(() {});
   }
 }
 

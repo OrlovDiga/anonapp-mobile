@@ -9,7 +9,7 @@ class RegistrationPage extends StatelessWidget {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,6 +126,7 @@ class RegistrationPage extends StatelessWidget {
                                 hintStyle: TextStyle(color: Colors.grey.withOpacity(.8)),
                                 hintText: "Password"
                             ),
+                            obscureText: true,
                             controller: passwordController,
                           ),
                         ),
@@ -138,6 +139,7 @@ class RegistrationPage extends StatelessWidget {
                                 hintStyle: TextStyle(color: Colors.grey.withOpacity(.8)),
                                 hintText: "Confirm Password"
                             ),
+                            obscureText: true,
                             controller: confirmPasswordController,
                           ),
                         ),
@@ -183,5 +185,4 @@ class RegistrationPage extends StatelessWidget {
     ) ;
     throw UnimplementedError();
   }
-
 }

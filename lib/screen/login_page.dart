@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:anonapp_mobile/screen/recovery_page.dart';
 import 'package:anonapp_mobile/screen/registration_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:anonapp_mobile/animation/fade_animation.dart';
 import 'package:anonapp_mobile/screen/home_page.dart';
@@ -12,6 +14,8 @@ import 'package:path_provider/path_provider.dart';
 class LoginPage extends StatelessWidget {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +83,8 @@ class LoginPage extends StatelessWidget {
                           child: TextField(
                             decoration: InputDecoration(
                                 border: InputBorder.none,
-                                hintStyle: TextStyle(color: Colors.grey.withOpacity(.8)),
+                                hintStyle: TextStyle(
+                                    color: Colors.grey.withOpacity(.8)),
                                 hintText: "Email or Phone number"
                             ),
                             controller: usernameController,
@@ -91,9 +96,11 @@ class LoginPage extends StatelessWidget {
                           child: TextField(
                             decoration: InputDecoration(
                                 border: InputBorder.none,
-                                hintStyle: TextStyle(color: Colors.grey.withOpacity(.8)),
+                                hintStyle: TextStyle(
+                                    color: Colors.grey.withOpacity(.8)),
                                 hintText: "Password"
                             ),
+                            obscureText: true,
                             controller: passwordController,
                           ),
                         ),
@@ -104,22 +111,30 @@ class LoginPage extends StatelessWidget {
                 SizedBox(
                   height: 20.0,
                 ),
-                Center(
-                  child: FadeAnimation(
+                FadeAnimation(
                     1,
-                    Text(
-                      "Forgot Password?",
-                      style: TextStyle(
-                          color:  Colors.pink[200]
-                      ),
-                    ),
-                  ),
+                    Center(
+                        child: InkWell(
+                          child: Text(
+                            "Forgot Password?",
+                            style: TextStyle(
+                                color: Colors.pink[200]
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) =>
+                                    RecoveryPage()));
+                          },
+                        )
+                    )
                 ),
                 SizedBox(
                   height: 20.0,
                 ),
                 FadeAnimation(
-                  1,
+                    1,
                     Container(
                       height: 50,
                       margin: EdgeInsets.symmetric(horizontal: 60),
@@ -134,13 +149,29 @@ class LoginPage extends StatelessWidget {
                             //print(res);
                             Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => HomePage()));
+                                MaterialPageRoute(
+                                    builder: (context) => HomePage()));
                           } else {
-                            print('sosi');
-                            usernameController.clear();
-                            passwordController.clear();
+                            return showDialog<void>(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return CupertinoAlertDialog(
+                                  title: Text('Invalid username or password'),
+                                  content: Text('Try again'),
+                                  actions: <Widget>[
+                                    FlatButton(
+                                      child: Text('Ok!'),
+                                      onPressed: () {
+                                        usernameController.clear();
+                                        passwordController.clear();
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           }
-
                         },
                         color: Color.fromRGBO(131, 58, 199, 15),
                         textColor: Colors.white,
@@ -156,19 +187,20 @@ class LoginPage extends StatelessWidget {
                 FadeAnimation(
                     1,
                     Center(
-                      child: InkWell(
-                        child: Text(
-                          "Create Account",
-                          style: TextStyle(
-                             color: Colors.pink[200]
+                        child: InkWell(
+                          child: Text(
+                            "Create Account",
+                            style: TextStyle(
+                                color: Colors.pink[200]
+                            ),
                           ),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => RegistrationPage()));
-                        },
-                      )
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) =>
+                                    RegistrationPage()));
+                          },
+                        )
                     )
                 ),
               ],
@@ -201,10 +233,13 @@ class LoginPage extends StatelessWidget {
     if (response.statusCode == 200) {
       var cookiesList = response.headers['set-cookie'].split(';');
       print(cookiesList);
-      cookiesList.forEach((e) => {
+      cookiesList.forEach((e) =>
+      {
         if (e.contains("token=")) {
           print(e),
-          File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').
+          File(
+              '/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token')
+              .
           writeAsStringSync(e.split('=')[1])
         }
       });
