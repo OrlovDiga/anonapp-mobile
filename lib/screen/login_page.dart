@@ -1,16 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:anonapp_mobile/animation/fade_animation.dart';
+import 'package:anonapp_mobile/screen/home_page.dart';
 import 'package:anonapp_mobile/screen/recovery_page.dart';
 import 'package:anonapp_mobile/screen/registration_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:anonapp_mobile/animation/fade_animation.dart';
-import 'package:anonapp_mobile/screen/home_page.dart';
-import 'package:http/http.dart' as http;
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatelessWidget {
   final storage = new FlutterSecureStorage();

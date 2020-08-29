@@ -113,7 +113,7 @@ class RecoveryPage extends StatelessWidget {
                     ),
                     onPressed: () {
                       if(usernameController.text.isNotEmpty) {
-                        http.post('http://127.0.0.1:8080/recovery',
+                        http.post('http://127.0.0.1:8080/reduction',
                             headers: <String, String>{
                               'Content-Type': 'application/json',
                             },
