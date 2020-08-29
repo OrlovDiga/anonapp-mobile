@@ -16,12 +16,10 @@ void main() => runApp(
         '/recovery': (context) => HomePage(),
         // When navigating to the "/registration" route, build the RegistrationPage widget.
         '/registration': (context) => HomePage(),
-        // When navigating to the "/chat" route, build the ChatPage widget.
-        '/chat': (context) => ChatPage(),
-        // When navigating to the "/chat" route, build the ChatPage widget.
+        // When navigating to the "/check" route, build the StartPage widget.
         '/check': (context) => StartPage()
       },
-      home: LoginPage(),
+      home: StartPage(),
       debugShowCheckedModeBanner: false,
     )
 );

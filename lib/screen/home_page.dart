@@ -2,10 +2,14 @@ import 'dart:io';
 
 import 'package:anonapp_mobile/animation/fade_animation.dart';
 import 'package:anonapp_mobile/screen/chat_page.dart';
+import 'package:anonapp_mobile/screen/option_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class HomePage extends StatelessWidget {
+  final storage = new FlutterSecureStorage();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,10 +41,12 @@ class HomePage extends StatelessWidget {
           ),
           Center(child:
             RawMaterialButton(
-              onPressed: () {
+              onPressed: () async {
+                String token = await storage.read(key: 'token');
+
                 Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ChatPage()));
+                    MaterialPageRoute(builder: (context) => ChatPage(token)));
               },
               elevation: 2.0,
               fillColor: Color.fromRGBO(131, 58, 199, 4),
@@ -87,7 +93,11 @@ class HomePage extends StatelessWidget {
                   shape: CircleBorder(),
                 ),
                 RawMaterialButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => OptionPage()));
+                    },
                   elevation: 2.0,
                   fillColor: Color.fromRGBO(131, 58, 199, 4),
                   child: Icon(
@@ -100,9 +110,8 @@ class HomePage extends StatelessWidget {
                 ),
                 RawMaterialButton(
                   onPressed: () {
-                    File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').
-                    writeAsStringSync('');
-                    Navigator.pushNamedAndRemoveUntil(context, "/", (r) => false);
+                    storage.delete(key: 'token');
+                    Navigator.pushNamedAndRemoveUntil(context, "/login", (r) => false);
                     },
                   elevation: 2.0,
                   fillColor: Color.fromRGBO(131, 58, 199, 4),
@@ -122,7 +131,4 @@ class HomePage extends StatelessWidget {
     );
     throw UnimplementedError();
   }
-
-
-
 }

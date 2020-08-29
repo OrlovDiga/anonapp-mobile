@@ -1,33 +1,42 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:anonapp_mobile/model/message_model.dart';
+import 'package:anonapp_mobile/model/user_model.dart';
 import 'package:dash_chat/dash_chat.dart';
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/io.dart';
-import 'package:swipedetector/swipedetector.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
-import 'package:http/http.dart' as http;
+import 'package:swipedetector/swipedetector.dart';
+import 'package:web_socket_channel/io.dart';
 
 class ChatPage extends StatefulWidget {
-  final IOWebSocketChannel channel = IOWebSocketChannel.connect(
-      Uri(scheme: "ws", host: "localhost", port: 8080, path: "/api/socket"),
-      headers: {'token': File('/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token').readAsStringSync()}
-  );
+  final token;
+  IOWebSocketChannel channel;
+
+  ChatPage(this.token);
 
   @override
   _ChatPageState createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
+  @override
+  void initState() {
+    widget.channel = IOWebSocketChannel.connect(
+    Uri(scheme: "ws", host: "localhost", port: 8080, path: "/api/socket"),
+    headers: {'token': widget.token}
+    );
+        super.initState();
+  }
 
   final GlobalKey<DashChatState> _chatViewKey = GlobalKey<DashChatState>();
   bool _showChat = true;
   Color _heartColor;
   Color _photoColor = Colors.grey;
-  bool _isHeartButtonDisabled = false;
+  bool _isHeartButtonDisabled = true;
+  bool _isNextButtonDisabled = true;
   bool _canUploadFile = false;
   final picker = new ImagePicker();
 
@@ -68,10 +77,6 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-  }
 
   void onSend(ChatMessage message) {
     SocketChatUser user = new SocketChatUser('uid', "Walf", "urlToAvatar");
@@ -146,7 +151,7 @@ class _ChatPageState extends State<ChatPage> {
                       color: Colors.white,
                       size: 35
                   ),
-                  onPressed: onPressedToNext,
+                  onPressed: _isNextButtonDisabled ? null : onPressedToNext,
                 ),
               ],
             ),
@@ -160,7 +165,7 @@ class _ChatPageState extends State<ChatPage> {
                 print('${snapshots.toString()}');
                 print('${snapshots.data.toString()}');
 
-                if (/*!snapshots.hasData*/false) {
+                if (!snapshots.hasData/*false*/) {
                   print('Haven\'t data.');
                   return Center(
                     child: CircularProgressIndicator(
@@ -170,10 +175,12 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   );
                 } else {
-                  //SocketMessage socketMessage = SocketMessage.fromJson(jsonDecode(snapshots.data));
+                  SocketMessage socketMessage = SocketMessage.fromJson(jsonDecode(snapshots.data));
                   //SocketMessage socketMessage = SocketMessage(MessageType.CONNECT, null);
                   print('in stream _showChat =  ${_showChat}');
-                  /*if (socketMessage.type == MessageType.CONNECT) {
+                  if (socketMessage.type == MessageType.CONNECT) {
+                    _isNextButtonDisabled = false;
+                    _isHeartButtonDisabled = false;
                     _showChat = true;
                     print('Start chat!');
                   } else if (!_showChat) {
@@ -206,12 +213,12 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                       ),
                     );
-                  }*/
+                  }
 
                   //var items = List();
                   //String s = snapshots.data.toString();
-                  ChatMessage msg = new ChatMessage(text: "Hello,World!", user: otherUser);
-                  messages.add(msg);
+                  //ChatMessage msg = new ChatMessage(text: "Hello,World!", user: otherUser);
+                  //messages.add(msg);
                   //items.add(s);
                   //var messages =
                   //items.map((i) => new ChatMessage(text: i, user: otherUser)).toList();
@@ -253,7 +260,7 @@ class _ChatPageState extends State<ChatPage> {
                           Icons.photo,
                           color: _photoColor,
                         ),
-                        onPressed: uploadFile,
+                        onPressed: _canUploadFile ? uploadFile : null,
                       ),
                     ],
                     shouldShowLoadEarlier: false,
@@ -301,7 +308,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void refreshPage() {
     messages.clear();
-    _heartColor = Colors.white;
+    _heartColor = null;
     _photoColor = Colors.grey;
     _isHeartButtonDisabled = false;
     _canUploadFile = false;

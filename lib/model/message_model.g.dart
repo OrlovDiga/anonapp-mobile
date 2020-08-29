@@ -81,18 +81,3 @@ Map<String, dynamic> _$SocketChatMessageToJson(SocketChatMessage instance) =>
       'image': instance.image,
       'video': instance.video,
     };
-
-SocketChatUser _$SocketChatUserFromJson(Map<String, dynamic> json) {
-  return SocketChatUser(
-    json['uid'] as String,
-    json['name'] as String,
-    json['avatar'] as String,
-  );
-}
-
-Map<String, dynamic> _$SocketChatUserToJson(SocketChatUser instance) =>
-    <String, dynamic>{
-      'uid': instance.uid,
-      'name': instance.name,
-      'avatar': instance.avatar,
-    };

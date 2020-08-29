@@ -1,3 +1,4 @@
+import 'package:anonapp_mobile/model/user_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'message_model.g.dart';
@@ -25,18 +26,6 @@ class SocketChatMessage {
 
   factory SocketChatMessage.fromJson(Map<String, dynamic> json) => _$SocketChatMessageFromJson(json);
   Map<String, dynamic> toJson() => _$SocketChatMessageToJson(this);
-}
-
-@JsonSerializable()
-class SocketChatUser {
-  final String uid;
-  final String name;
-  final String avatar;
-
-  SocketChatUser(this.uid, this.name, this.avatar);
-
-  factory SocketChatUser.fromJson(Map<String, dynamic> json) => _$SocketChatUserFromJson(json);
-  Map<String, dynamic> toJson() => _$SocketChatUserToJson(this);
 }
 
 enum MessageType {

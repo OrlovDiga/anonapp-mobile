@@ -10,8 +10,11 @@ import 'package:anonapp_mobile/screen/home_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginPage extends StatelessWidget {
+  final storage = new FlutterSecureStorage();
+
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -143,9 +146,9 @@ class LoginPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         onPressed: () async {
-                          //var res = await authentication();
+                          var res = await authentication();
 
-                          if (/*res*/true) {
+                          if (res) {
                             //print(res);
                             Navigator.push(
                                 context,
@@ -213,10 +216,6 @@ class LoginPage extends StatelessWidget {
 
   Future<bool> authentication() async {
     var url = "http://127.0.0.1:8080/authenticate";
-    print(File('//assets/config/token').path);
-
-    final diretory = await getApplicationDocumentsDirectory();
-    String path = '${diretory.path}/token';
 
     Map jsonData = {
       'username': usernameController.text,
@@ -233,14 +232,11 @@ class LoginPage extends StatelessWidget {
     if (response.statusCode == 200) {
       var cookiesList = response.headers['set-cookie'].split(';');
       print(cookiesList);
-      cookiesList.forEach((e) =>
+      cookiesList.forEach((e) async =>
       {
         if (e.contains("token=")) {
           print(e),
-          File(
-              '/Users/macbook/AndroidStudioProjects/anonapp_mobile/assets/config/token')
-              .
-          writeAsStringSync(e.split('=')[1])
+           await storage.write(key: 'token', value: e.split('=')[1])
         }
       });
       print('true');
